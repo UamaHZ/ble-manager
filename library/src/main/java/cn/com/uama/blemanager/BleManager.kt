@@ -3,6 +3,7 @@ package cn.com.uama.blemanager
 import android.Manifest
 import android.bluetooth.BluetoothManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.support.v4.content.ContextCompat
 import android.widget.Toast
@@ -31,7 +32,8 @@ class BleManager(private val context: Context) {
 
         // 判断蓝牙是否已经开启
         if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
-            // TODO: 启动一个透明的 activity 来启动蓝牙
+            // 启动一个透明的 activity 来启动蓝牙
+            context.startActivity(Intent(context, EnableBluetoothActivity::class.java))
             return
         }
 
