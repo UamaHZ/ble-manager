@@ -14,11 +14,15 @@ import io.reactivex.disposables.Disposable
  * Email: liwei@uama.com.cn
  * Description:
  */
-
 /**
  * 启动蓝牙结果事件
  */
 class EnableBTResultEvent(val enabled: Boolean)
+
+/**
+ * 请求定位权限结果事件
+ */
+class LocationPermissionResultEvent(val granted: Boolean)
 
 interface Callback {
     fun connected()
@@ -47,17 +51,36 @@ class BleManager(private val context: Context) {
                     }
 
             // 启动一个透明的 activity 来启动蓝牙
-            context.startActivity(Intent(context, EnableBluetoothActivity::class.java))
+            val intent = Intent(context, EnableBluetoothActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(intent)
             return
         }
 
         // 判断是否有定位权限
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            // TODO: 启动一个透明的 activity 来申请权限
-            Toast.makeText(context, "需要申请定位权限", Toast.LENGTH_SHORT).show()
+            lateinit var disposable: Disposable
+            disposable = RxBus.toObservable(LocationPermissionResultEvent::class.java)
+                    .map { it.granted }
+                    .subscribe {
+                        if (it) {
+                            scan(uuid, major, minor, callback)
+                        } else {
+                            Toast.makeText(context, "没有定位权限无法进行蓝牙扫描操作", Toast.LENGTH_SHORT).show()
+                        }
+                        disposable.dispose()
+                    }
+
+            // 启动一个透明的 activity 来申请权限
+            val intent = Intent(context, RequestLocationPermissionActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(intent)
             return
         }
+
+        // TODO: 开始执行扫描逻辑
+        Toast.makeText(context, "开始执行扫描逻辑", Toast.LENGTH_SHORT).show()
     }
 
     private fun hasBLEFeature(): Boolean {

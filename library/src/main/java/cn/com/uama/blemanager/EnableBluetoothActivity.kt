@@ -4,8 +4,9 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 
-class EnableBluetoothActivity : Activity() {
+class EnableBluetoothActivity : AppCompatActivity() {
 
     companion object {
         const val REQUEST_ENABLE_BT = 1

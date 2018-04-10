@@ -13,8 +13,12 @@
     <application>
         <activity
             android:name=".EnableBluetoothActivity"
-            android:theme="@style/Theme.Transparent"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Transparent" />
+        <activity
+            android:name=".RequestLocationPermissionActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Transparent" />
     </application>
 
 </manifest>
