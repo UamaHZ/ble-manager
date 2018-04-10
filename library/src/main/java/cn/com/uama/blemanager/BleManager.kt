@@ -7,12 +7,18 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.support.v4.content.ContextCompat
 import android.widget.Toast
+import io.reactivex.disposables.Disposable
 
 /**
  * Created by liwei on 2018/4/9 20:40
  * Email: liwei@uama.com.cn
  * Description:
  */
+
+/**
+ * 启动蓝牙结果事件
+ */
+class EnableBTResultEvent(val enabled: Boolean)
 
 interface Callback {
     fun connected()
@@ -32,6 +38,14 @@ class BleManager(private val context: Context) {
 
         // 判断蓝牙是否已经开启
         if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
+            lateinit var disposable: Disposable
+            disposable = RxBus.toFlowable(EnableBTResultEvent::class.java)
+                    .map { it.enabled }
+                    .subscribe {
+                        if (it) scan(uuid, major, minor, callback)
+                        disposable.dispose()
+                    }
+
             // 启动一个透明的 activity 来启动蓝牙
             context.startActivity(Intent(context, EnableBluetoothActivity::class.java))
             return
@@ -41,6 +55,7 @@ class BleManager(private val context: Context) {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             // TODO: 启动一个透明的 activity 来申请权限
+            Toast.makeText(context, "需要申请定位权限", Toast.LENGTH_SHORT).show()
             return
         }
     }

@@ -23,7 +23,9 @@ class EnableBluetoothActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_OK) {
             // 蓝牙被成功打开
-            // TODO: 怎们传递蓝牙被成功打开的消息？RxBus？
+            RxBus.send(EnableBTResultEvent(true))
+        } else {
+            RxBus.send(EnableBTResultEvent(false))
         }
         finish()
     }
