@@ -1,10 +1,10 @@
 package cn.com.uama.blemanager.sample
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.view.View
+import android.widget.Toast
 import cn.com.uama.blemanager.BleManager
-import cn.com.uama.blemanager.Callback
 
 class MainActivity : AppCompatActivity() {
 
@@ -18,15 +18,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun startScan(view: View) {
-        bleManager.scan("", 0, 0, object : Callback {
-            override fun connected() {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        bleManager.scan("FDA50693-A4E2-4FB1-AFCF-C6EB07647907", 1234, 1234) {
+            if (it) {
+                Toast.makeText(this, "搜索到目标设备", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this, "没有搜索到目标设备", Toast.LENGTH_LONG).show()
             }
-
-            override fun failed() {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-        })
+        }
     }
 }

@@ -27,11 +27,6 @@ class EnableBTResultEvent(val enabled: Boolean)
  */
 class LocationPermissionResultEvent(val granted: Boolean)
 
-interface Callback {
-    fun connected()
-    fun failed()
-}
-
 class BleManager(private val context: Context) {
     private val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     private val bluetoothAdapter = bluetoothManager.adapter
@@ -41,7 +36,7 @@ class BleManager(private val context: Context) {
         const val SCAN_PERIOD = 3000L
     }
 
-    fun scan(uuid: String, major: Int, minor: Int, callback: Callback) {
+    fun scan(uuid: String, major: Int, minor: Int, callback: (Boolean) -> Unit) {
         // 判断设备是否支持 BLE
         if (!hasBLEFeature()) {
             Toast.makeText(context, "设备不支持 BLE", Toast.LENGTH_SHORT).show()
@@ -87,14 +82,26 @@ class BleManager(private val context: Context) {
             return
         }
 
+        var connected = false
         // 开始执行扫描逻辑
-        val leScanCallback = BluetoothAdapter.LeScanCallback {device, rssi, scanRecord ->
-            // TODO: 对比看是否有要扫描的设备
-            Log.d("BleManager", "扫描到设备：${device.address}")
+        lateinit var leScanCallback: BluetoothAdapter.LeScanCallback
+        leScanCallback = BluetoothAdapter.LeScanCallback { device, rssi, scanRecord ->
+            // 对比看是否有要扫描的设备
+            val beacon = BeaconFactory.createBeacon(device, rssi, scanRecord)
+            if (beacon.uuid == uuid.toLowerCase() && beacon.major == major && beacon.minor == minor) {
+                bluetoothAdapter.stopLeScan(leScanCallback)
+
+                connected = true
+                callback(true)
+            }
         }
         // SCAN_PERIOD 时间之后如果仍未搜索到，停止搜索
         handler.postDelayed({
             bluetoothAdapter.stopLeScan(leScanCallback)
+
+            if (!connected) {
+                callback(false)
+            }
         }, SCAN_PERIOD)
         bluetoothAdapter.startLeScan(leScanCallback)
     }
