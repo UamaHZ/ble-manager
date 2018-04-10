@@ -3,10 +3,9 @@ package cn.com.uama.blemanager
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 
-class EnableBluetoothActivity : AppCompatActivity() {
+class EnableBluetoothActivity : Activity() {
 
     companion object {
         const val REQUEST_ENABLE_BT = 1
