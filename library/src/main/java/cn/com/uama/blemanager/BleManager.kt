@@ -1,11 +1,14 @@
 package cn.com.uama.blemanager
 
 import android.Manifest
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Handler
 import android.support.v4.content.ContextCompat
+import android.util.Log
 import android.widget.Toast
 import io.reactivex.disposables.Disposable
 
@@ -32,6 +35,11 @@ interface Callback {
 class BleManager(private val context: Context) {
     private val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     private val bluetoothAdapter = bluetoothManager.adapter
+    private val handler = Handler()
+
+    companion object {
+        const val SCAN_PERIOD = 3000L
+    }
 
     fun scan(uuid: String, major: Int, minor: Int, callback: Callback) {
         // 判断设备是否支持 BLE
@@ -79,8 +87,16 @@ class BleManager(private val context: Context) {
             return
         }
 
-        // TODO: 开始执行扫描逻辑
-        Toast.makeText(context, "开始执行扫描逻辑", Toast.LENGTH_SHORT).show()
+        // 开始执行扫描逻辑
+        val leScanCallback = BluetoothAdapter.LeScanCallback {device, rssi, scanRecord ->
+            // TODO: 对比看是否有要扫描的设备
+            Log.d("BleManager", "扫描到设备：${device.address}")
+        }
+        // SCAN_PERIOD 时间之后如果仍未搜索到，停止搜索
+        handler.postDelayed({
+            bluetoothAdapter.stopLeScan(leScanCallback)
+        }, SCAN_PERIOD)
+        bluetoothAdapter.startLeScan(leScanCallback)
     }
 
     private fun hasBLEFeature(): Boolean {
